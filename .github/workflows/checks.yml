@@ -25,7 +25,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Waiting for Vercel deployment..."
-          for i in {1..30}; do
+          for i in {1..15}; do
             echo -n "."
 
             # Check deployment status
