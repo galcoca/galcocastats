@@ -9,15 +9,19 @@ Beautiful, customizable SVG cards displaying GitHub statistics for your profile 
 Here's how the cards look with real data:
 
 ### Overview
+
 ![Overview Card](https://galcocastats.vercel.app/api/overview?theme=github)
 
 ### Tech & Skills
+
 ![Tech Skills Card](https://galcocastats.vercel.app/api/tech-skills?theme=dracula)
 
 ### Activity Heatmap
+
 ![Activity Card](https://galcocastats.vercel.app/api/activity?theme=nord)
 
 ### Developer Profile
+
 ![Profile Card](https://galcocastats.vercel.app/api/profile?theme=catppuccin)
 
 ---
@@ -33,6 +37,7 @@ Here's how the cards look with real data:
 ## Cards
 
 ### Overview
+
 Shows contribution streak, longest streak, total contributions, merge rate, and active projects.
 
 ```markdown
@@ -40,6 +45,7 @@ Shows contribution streak, longest streak, total contributions, merge rate, and 
 ```
 
 ### Tech & Skills
+
 Displays top programming languages and DevOps indicators.
 
 ```markdown
@@ -47,6 +53,7 @@ Displays top programming languages and DevOps indicators.
 ```
 
 ### Activity
+
 30-day contribution heatmap visualization.
 
 ```markdown
@@ -54,6 +61,7 @@ Displays top programming languages and DevOps indicators.
 ```
 
 ### Profile
+
 Developer profile with key statistics.
 
 ```markdown
@@ -66,44 +74,45 @@ Add `?theme=<theme_name>` to any card URL. **18 themes available!**
 
 ### Classic Themes
 
-| Theme | Style | Preview |
-|:------|:------|:--------|
+| Theme     | Style                  | Preview                                                               |
+| :-------- | :--------------------- | :-------------------------------------------------------------------- |
 | `radical` | Vibrant pink/cyan neon | ![radical](https://galcocastats.vercel.app/api/profile?theme=radical) |
-| `neon` | Cyberpunk glow effects | ![neon](https://galcocastats.vercel.app/api/profile?theme=neon) |
-| `minimal` | Clean black + green | ![minimal](https://galcocastats.vercel.app/api/profile?theme=minimal) |
+| `neon`    | Cyberpunk glow effects | ![neon](https://galcocastats.vercel.app/api/profile?theme=neon)       |
+| `minimal` | Clean black + green    | ![minimal](https://galcocastats.vercel.app/api/profile?theme=minimal) |
 
 ### Modern Themes
 
-| Theme | Style | Preview |
-|:------|:------|:--------|
-| `glass` | Glassmorphism blur | ![glass](https://galcocastats.vercel.app/api/profile?theme=glass) |
-| `gradient` | Purple gradient | ![gradient](https://galcocastats.vercel.app/api/profile?theme=gradient) |
-| `aurora` | Northern lights | ![aurora](https://galcocastats.vercel.app/api/profile?theme=aurora) |
-| `sunset` | Warm orange/pink | ![sunset](https://galcocastats.vercel.app/api/profile?theme=sunset) |
-| `ocean` | Deep blue professional | ![ocean](https://galcocastats.vercel.app/api/profile?theme=ocean) |
+| Theme      | Style                  | Preview                                                                 |
+| :--------- | :--------------------- | :---------------------------------------------------------------------- |
+| `glass`    | Glassmorphism blur     | ![glass](https://galcocastats.vercel.app/api/profile?theme=glass)       |
+| `gradient` | Purple gradient        | ![gradient](https://galcocastats.vercel.app/api/profile?theme=gradient) |
+| `aurora`   | Northern lights        | ![aurora](https://galcocastats.vercel.app/api/profile?theme=aurora)     |
+| `sunset`   | Warm orange/pink       | ![sunset](https://galcocastats.vercel.app/api/profile?theme=sunset)     |
+| `ocean`    | Deep blue professional | ![ocean](https://galcocastats.vercel.app/api/profile?theme=ocean)       |
 
 ### Developer Favorites
 
-| Theme | Style | Preview |
-|:------|:------|:--------|
-| `github` | Official GitHub dark | ![github](https://galcocastats.vercel.app/api/profile?theme=github) |
-| `dracula` | Classic dev theme | ![dracula](https://galcocastats.vercel.app/api/profile?theme=dracula) |
-| `nord` | Arctic blue palette | ![nord](https://galcocastats.vercel.app/api/profile?theme=nord) |
-| `monokai` | Editor classic | ![monokai](https://galcocastats.vercel.app/api/profile?theme=monokai) |
-| `catppuccin` | Pastel trending | ![catppuccin](https://galcocastats.vercel.app/api/profile?theme=catppuccin) |
-| `tokyonight` | Modern dev favorite | ![tokyonight](https://galcocastats.vercel.app/api/profile?theme=tokyonight) |
-| `gruvbox` | Warm retro colors | ![gruvbox](https://galcocastats.vercel.app/api/profile?theme=gruvbox) |
+| Theme        | Style                | Preview                                                                     |
+| :----------- | :------------------- | :-------------------------------------------------------------------------- |
+| `github`     | Official GitHub dark | ![github](https://galcocastats.vercel.app/api/profile?theme=github)         |
+| `dracula`    | Classic dev theme    | ![dracula](https://galcocastats.vercel.app/api/profile?theme=dracula)       |
+| `nord`       | Arctic blue palette  | ![nord](https://galcocastats.vercel.app/api/profile?theme=nord)             |
+| `monokai`    | Editor classic       | ![monokai](https://galcocastats.vercel.app/api/profile?theme=monokai)       |
+| `catppuccin` | Pastel trending      | ![catppuccin](https://galcocastats.vercel.app/api/profile?theme=catppuccin) |
+| `tokyonight` | Modern dev favorite  | ![tokyonight](https://galcocastats.vercel.app/api/profile?theme=tokyonight) |
+| `gruvbox`    | Warm retro colors    | ![gruvbox](https://galcocastats.vercel.app/api/profile?theme=gruvbox)       |
 
 ### Special Themes
 
-| Theme | Style | Preview |
-|:------|:------|:--------|
-| `rosegold` | Elegant rose/gold | ![rosegold](https://galcocastats.vercel.app/api/profile?theme=rosegold) |
+| Theme       | Style               | Preview                                                                   |
+| :---------- | :------------------ | :------------------------------------------------------------------------ |
+| `rosegold`  | Elegant rose/gold   | ![rosegold](https://galcocastats.vercel.app/api/profile?theme=rosegold)   |
 | `synthwave` | 80s retro aesthetic | ![synthwave](https://galcocastats.vercel.app/api/profile?theme=synthwave) |
-| `forest` | Nature green | ![forest](https://galcocastats.vercel.app/api/profile?theme=forest) |
+| `forest`    | Nature green        | ![forest](https://galcocastats.vercel.app/api/profile?theme=forest)       |
 
 ## Tech Stack
 
+- **Node.js 24+** - Required runtime (see `.nvmrc`)
 - **Next.js 16** - Full-stack React framework
 - **Satori** - HTML/CSS to SVG rendering
 - **TypeScript** - Type-safe development
@@ -161,7 +170,6 @@ You can use either a **Classic Token** or a **Fine-grained Token**:
 2. **Deploy to Vercel:**
 
    [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/galcocastats)
-
    - Go to [vercel.com](https://vercel.com) and sign in with GitHub
    - Click "New Project" and import your forked repository
    - Add Environment Variables:
@@ -171,7 +179,7 @@ You can use either a **Classic Token** or a **Fine-grained Token**:
      ```
    - Click "Deploy"
 
-4. **Use your cards:**
+3. **Use your cards:**
    ```markdown
    ![Overview](https://YOUR-PROJECT.vercel.app/api/overview?theme=github)
    ```
@@ -191,7 +199,7 @@ You can use either a **Classic Token** or a **Fine-grained Token**:
      ```
    - Go to "Deploy" > "Manual deploy" > "Deploy Branch"
 
-4. **Use your cards:**
+3. **Use your cards:**
    ```markdown
    ![Overview](https://YOUR-APP.herokuapp.com/api/overview?theme=dracula)
    ```
@@ -199,12 +207,14 @@ You can use either a **Classic Token** or a **Fine-grained Token**:
 ### Alternative: Local Development
 
 1. Clone your forked repository:
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/galcocastats.git
    cd galcocastats
    ```
 
 2. Install dependencies:
+
    ```bash
    bun install
    # or
@@ -212,12 +222,14 @@ You can use either a **Classic Token** or a **Fine-grained Token**:
    ```
 
 3. Create `.env.local`:
+
    ```env
    GITHUB_TOKEN=your_github_personal_access_token
    GITHUB_USERNAME=your_github_username
    ```
 
 4. Run the development server:
+
    ```bash
    bun dev
    # or
@@ -230,19 +242,19 @@ You can use either a **Classic Token** or a **Fine-grained Token**:
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `GITHUB_TOKEN` | GitHub Personal Access Token with `read:user` and `repo` scopes | Yes |
-| `GITHUB_USERNAME` | Your GitHub username | Yes |
+| Variable          | Description                                                     | Required |
+| ----------------- | --------------------------------------------------------------- | -------- |
+| `GITHUB_TOKEN`    | GitHub Personal Access Token with `read:user` and `repo` scopes | Yes      |
+| `GITHUB_USERNAME` | Your GitHub username                                            | Yes      |
 
 ## API Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `/api/overview` | Contribution streak, total contributions, merge rate |
-| `/api/tech-skills` | Top programming languages and DevOps tools |
-| `/api/activity` | 30-day contribution heatmap |
-| `/api/profile` | Developer profile with key statistics |
+| Endpoint           | Description                                          |
+| ------------------ | ---------------------------------------------------- |
+| `/api/overview`    | Contribution streak, total contributions, merge rate |
+| `/api/tech-skills` | Top programming languages and DevOps tools           |
+| `/api/activity`    | 30-day contribution heatmap                          |
+| `/api/profile`     | Developer profile with key statistics                |
 
 All endpoints accept `?theme=<theme_name>` parameter.
 
@@ -271,6 +283,7 @@ After deploying, add these to your GitHub profile README:
 MIT License - Open source, free to use, modify and distribute.
 
 **Attribution Required:** Please keep credits to the original author visible. This includes:
+
 - Keeping the LICENSE file in your fork
 - Maintaining the footer attribution in the web interface
 

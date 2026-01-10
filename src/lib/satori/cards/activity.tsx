@@ -1,4 +1,5 @@
 import { Card } from '../renderer'
+
 import type { Theme } from '@/lib/themes'
 import type { ActivityData } from '@/lib/github/types'
 
@@ -46,13 +47,13 @@ function formatDate(dateStr: string): string {
 }
 
 function calculateStats(activity: ActivityData[]) {
-  const maxCount = Math.max(...activity.map((d) => d.count), 1)
+  const maxCount = Math.max(...activity.map(d => d.count), 1)
   const totalContributions = activity.reduce((sum, d) => sum + d.count, 0)
   const avgPerDay = totalContributions / activity.length
-  const activeDays = activity.filter((d) => d.count > 0).length
+  const activeDays = activity.filter(d => d.count > 0).length
 
   const bestDay = activity.reduce((best, day) => (day.count > best.count ? day : best), activity[0])
-  const bestDayIndex = activity.findIndex((d) => d.date === bestDay.date)
+  const bestDayIndex = activity.findIndex(d => d.date === bestDay.date)
 
   // Weekly stats
   const weeks: number[] = []
@@ -81,7 +82,7 @@ function calculateStats(activity: ActivityData[]) {
     previousWeek,
     bestWeek,
     bestWeekIndex,
-    weeks
+    weeks,
   }
 }
 
@@ -110,7 +111,15 @@ function generateYLabels(maxCount: number) {
 // Sub-components
 // =============================================================================
 
-function Header({ days, trendPercent, theme }: { days: number; trendPercent: number; theme: Theme }) {
+function Header({
+  days,
+  trendPercent,
+  theme,
+}: {
+  days: number
+  trendPercent: number
+  theme: Theme
+}) {
   const isUp = trendPercent >= 0
   const color = isUp ? '#22c55e' : '#ef4444'
 
@@ -119,18 +128,21 @@ function Header({ days, trendPercent, theme }: { days: number; trendPercent: num
       <div style={{ display: 'flex', fontSize: 18, fontWeight: 600, color: theme.title }}>
         Last {days} Days
       </div>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginLeft: 12,
-        padding: '4px 10px',
-        background: `${color}20`,
-        borderRadius: 6,
-        gap: 4,
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginLeft: 12,
+          padding: '4px 10px',
+          background: `${color}20`,
+          borderRadius: 6,
+          gap: 4,
+        }}
+      >
         {isUp ? <TrendUpIcon color={color} /> : <TrendDownIcon color={color} />}
         <div style={{ display: 'flex', fontSize: 14, fontWeight: 600, color }}>
-          {isUp ? '+' : ''}{trendPercent.toFixed(0)}%
+          {isUp ? '+' : ''}
+          {trendPercent.toFixed(0)}%
         </div>
       </div>
     </div>
@@ -172,9 +184,11 @@ function Graph({
   })
 
   return (
-    <div style={{ display: 'flex', position: 'relative', width: GRAPH_WIDTH, height: GRAPH_HEIGHT }}>
+    <div
+      style={{ display: 'flex', position: 'relative', width: GRAPH_WIDTH, height: GRAPH_HEIGHT }}
+    >
       {/* Y-axis labels */}
-      {yLabels.map((label) => (
+      {yLabels.map(label => (
         <div
           key={label.value}
           style={{
@@ -193,9 +207,13 @@ function Graph({
       ))}
 
       {/* SVG Chart */}
-      <svg width={GRAPH_WIDTH} height={GRAPH_HEIGHT} style={{ position: 'absolute', left: 0, top: 0 }}>
+      <svg
+        width={GRAPH_WIDTH}
+        height={GRAPH_HEIGHT}
+        style={{ position: 'absolute', left: 0, top: 0 }}
+      >
         {/* Grid lines */}
-        {yLabels.map((label) => (
+        {yLabels.map(label => (
           <line
             key={label.value}
             x1={PADDING.left}
@@ -251,28 +269,32 @@ function Graph({
       </svg>
 
       {/* Avg label */}
-      <div style={{
-        display: 'flex',
-        position: 'absolute',
-        right: 12,
-        top: avgY - 16,
-        fontSize: 9,
-        color: theme.accent,
-        fontWeight: 600,
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          right: 12,
+          top: avgY - 16,
+          fontSize: 9,
+          color: theme.accent,
+          fontWeight: 600,
+        }}
+      >
         avg
       </div>
 
       {/* X-axis: Month labels + day numbers */}
-      <div style={{
-        display: 'flex',
-        position: 'absolute',
-        left: PADDING.left,
-        top: GRAPH_HEIGHT - 20,
-        width: CHART_WIDTH,
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          left: PADDING.left,
+          top: GRAPH_HEIGHT - 20,
+          width: CHART_WIDTH,
+        }}
+      >
         {activity.map((d, i) => {
-          const { day, month } = parseDate(d.date)
+          const { day } = parseDate(d.date)
           const isMonthStart = monthChanges.find(mc => mc.index === i)
 
           return (
@@ -287,22 +309,26 @@ function Graph({
               }}
             >
               {isMonthStart && (
-                <div style={{
-                  display: 'flex',
-                  fontSize: 8,
-                  color: theme.accent,
-                  fontWeight: 600,
-                  marginBottom: 1,
-                }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    fontSize: 8,
+                    color: theme.accent,
+                    fontWeight: 600,
+                    marginBottom: 1,
+                  }}
+                >
                   {isMonthStart.month}
                 </div>
               )}
-              <div style={{
-                display: 'flex',
-                fontSize: 9,
-                color: isMonthStart ? theme.title : theme.dates,
-                fontWeight: isMonthStart ? 600 : 400,
-              }}>
+              <div
+                style={{
+                  display: 'flex',
+                  fontSize: 9,
+                  color: isMonthStart ? theme.title : theme.dates,
+                  fontWeight: isMonthStart ? 600 : 400,
+                }}
+              >
                 {day}
               </div>
             </div>
@@ -329,7 +355,15 @@ function WeekComparison({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', marginTop: 14 }}>
-      <div style={{ display: 'flex', fontSize: 13, color: theme.dates, marginBottom: 10, fontWeight: 500 }}>
+      <div
+        style={{
+          display: 'flex',
+          fontSize: 13,
+          color: theme.dates,
+          marginBottom: 10,
+          fontWeight: 500,
+        }}
+      >
         Weekly Comparison
       </div>
       <div style={{ display: 'flex', gap: 16 }}>
@@ -337,24 +371,35 @@ function WeekComparison({
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>This week</div>
-            <div style={{ display: 'flex', fontSize: 12, fontWeight: 600, color: isUp ? '#22c55e' : theme.title }}>
+            <div
+              style={{
+                display: 'flex',
+                fontSize: 12,
+                fontWeight: 600,
+                color: isUp ? '#22c55e' : theme.title,
+              }}
+            >
               {currentWeek}
             </div>
           </div>
-          <div style={{
-            display: 'flex',
-            height: 8,
-            background: theme.gridEmpty,
-            borderRadius: 4,
-            overflow: 'hidden',
-          }}>
-            <div style={{
+          <div
+            style={{
               display: 'flex',
-              width: `${(currentWeek / maxWeek) * 100}%`,
-              height: '100%',
-              background: isUp ? '#22c55e' : theme.graphLine,
+              height: 8,
+              background: theme.gridEmpty,
               borderRadius: 4,
-            }} />
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: `${(currentWeek / maxWeek) * 100}%`,
+                height: '100%',
+                background: isUp ? '#22c55e' : theme.graphLine,
+                borderRadius: 4,
+              }}
+            />
           </div>
         </div>
 
@@ -366,20 +411,24 @@ function WeekComparison({
               {previousWeek}
             </div>
           </div>
-          <div style={{
-            display: 'flex',
-            height: 8,
-            background: theme.gridEmpty,
-            borderRadius: 4,
-            overflow: 'hidden',
-          }}>
-            <div style={{
+          <div
+            style={{
               display: 'flex',
-              width: `${(previousWeek / maxWeek) * 100}%`,
-              height: '100%',
-              background: theme.graphLine,
+              height: 8,
+              background: theme.gridEmpty,
               borderRadius: 4,
-            }} />
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: `${(previousWeek / maxWeek) * 100}%`,
+                height: '100%',
+                background: theme.graphLine,
+                borderRadius: 4,
+              }}
+            />
           </div>
         </div>
 
@@ -391,20 +440,24 @@ function WeekComparison({
               {bestWeek}
             </div>
           </div>
-          <div style={{
-            display: 'flex',
-            height: 8,
-            background: theme.gridEmpty,
-            borderRadius: 4,
-            overflow: 'hidden',
-          }}>
-            <div style={{
+          <div
+            style={{
               display: 'flex',
-              width: `${(bestWeek / maxWeek) * 100}%`,
-              height: '100%',
-              background: theme.accent,
+              height: 8,
+              background: theme.gridEmpty,
               borderRadius: 4,
-            }} />
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: `${(bestWeek / maxWeek) * 100}%`,
+                height: '100%',
+                background: theme.accent,
+                borderRadius: 4,
+              }}
+            />
           </div>
         </div>
       </div>
@@ -435,35 +488,52 @@ function StatsPanel({
   ]
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      width: 150,
-      background: `${theme.border}15`,
-      borderRadius: 12,
-      padding: 16,
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: 150,
+        background: `${theme.border}15`,
+        borderRadius: 12,
+        padding: 16,
+      }}
+    >
       {/* Total */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 14 }}>
+      <div
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 14 }}
+      >
         <div style={{ display: 'flex', fontSize: 34, fontWeight: 700, color: theme.accent }}>
           {totalContributions}
         </div>
         <div style={{ display: 'flex', fontSize: 12, color: theme.dates }}>contributions</div>
       </div>
 
-      <div style={{ display: 'flex', height: 1, background: theme.border, opacity: 0.2, marginBottom: 14 }} />
+      <div
+        style={{
+          display: 'flex',
+          height: 1,
+          background: theme.border,
+          opacity: 0.2,
+          marginBottom: 14,
+        }}
+      />
 
       {/* Stats */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {stats.map((stat) => (
-          <div key={stat.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {stats.map(stat => (
+          <div
+            key={stat.label}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
             <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>{stat.label}</div>
-            <div style={{
-              display: 'flex',
-              fontSize: stat.accent ? 12 : 14,
-              fontWeight: 600,
-              color: stat.accent ? theme.accent : theme.title,
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                fontSize: stat.accent ? 12 : 14,
+                fontWeight: 600,
+                color: stat.accent ? theme.accent : theme.title,
+              }}
+            >
               {stat.value}
             </div>
           </div>

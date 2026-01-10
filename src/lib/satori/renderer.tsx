@@ -1,4 +1,5 @@
 import satori from 'satori'
+
 import type { Theme } from '@/lib/themes'
 
 // Font cache
@@ -51,8 +52,8 @@ export function Card({
   children,
   theme,
   title,
-  width,
-  height,
+  width: _width,
+  height: _height,
 }: {
   children: React.ReactNode
   theme: Theme
@@ -88,9 +89,7 @@ export function Card({
           {title}
         </div>
       )}
-      <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-        {children}
-      </div>
+      <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>{children}</div>
     </div>
   )
 }
@@ -115,12 +114,8 @@ export function StatRow({
         marginBottom: 12,
       }}
     >
-      <div style={{ display: 'flex', marginRight: 12, color: theme.icon }}>
-        {icon}
-      </div>
-      <div style={{ display: 'flex', flex: 1, fontSize: 14, color: theme.text }}>
-        {label}
-      </div>
+      <div style={{ display: 'flex', marginRight: 12, color: theme.icon }}>{icon}</div>
+      <div style={{ display: 'flex', flex: 1, fontSize: 14, color: theme.text }}>{label}</div>
       <div style={{ display: 'flex', fontSize: 14, fontWeight: 700, color: theme.text }}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </div>

@@ -12,10 +12,11 @@ export async function GET(request: Request) {
 
     const activity = await getActivityData()
 
-    const svg = await renderToSvg(
-      <ActivityCard activity={activity} theme={theme} />,
-      { width: 900, height: 320, theme }
-    )
+    const svg = await renderToSvg(<ActivityCard activity={activity} theme={theme} />, {
+      width: 900,
+      height: 320,
+      theme,
+    })
 
     return new Response(svg, { headers: getCacheHeaders() })
   } catch (error) {
