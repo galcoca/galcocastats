@@ -15,9 +15,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  approve:
+    runs-on: ubuntu-latest
+    name: Await Approval
+    environment: Preview
+    steps:
+      - run: echo "✓ Approved to run checks"
+
   branch-check:
     runs-on: ubuntu-latest
     name: Check Branch Status
+    needs: approve
     if: |
       !(github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
     steps:
@@ -165,7 +173,7 @@ jobs:
   summary:
     runs-on: ubuntu-latest
     name: Checks Summary
-    needs: [branch-check, build, typecheck, lint]
+    needs: [approve, branch-check, build, typecheck, lint]
     if: always()
     steps:
       - name: Check results
