@@ -1,4 +1,5 @@
 import { Card } from '../renderer'
+import { withOpacity } from '@/lib/themes'
 import type { Theme } from '@/lib/themes'
 
 interface DeveloperStats {
@@ -83,7 +84,7 @@ export function DeveloperProfileCard({ stats, theme }: { stats: DeveloperStats; 
           alignItems: 'center',
           justifyContent: 'center',
           width: 130,
-          borderRight: `1px solid ${theme.border}30`,
+          borderRight: `1px solid ${withOpacity(theme.border, 0.19)}`,
           paddingRight: 30,
         }}>
           <div style={{ display: 'flex', fontSize: 12, color: theme.dates, marginBottom: 8 }}>
@@ -144,7 +145,7 @@ export function DeveloperProfileCard({ stats, theme }: { stats: DeveloperStats; 
           </div>
 
           {/* Divider 1 */}
-          <div style={{ display: 'flex', height: 1, background: `${theme.border}30`, margin: '14px 0' }} />
+          <div style={{ display: 'flex', height: 1, background: withOpacity(theme.border, 0.19), margin: '14px 0' }} />
 
           {/* Row 2 */}
           <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
