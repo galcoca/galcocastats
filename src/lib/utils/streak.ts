@@ -6,7 +6,7 @@ function getWeekNumber(date: Date): { year: number; week: number } {
   const dayNum = d.getUTCDay() || 7
   d.setUTCDate(d.getUTCDate() + 4 - dayNum)
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
   return { year: d.getUTCFullYear(), week: weekNo }
 }
 
@@ -49,8 +49,12 @@ export function calculateStreaks(contributionDays: ContributionDay[]): StreakSta
     const existing = weekMap.get(weekKey)
     if (existing) {
       existing.contributions += day.contributionCount
-      if (day.date < existing.firstDay) existing.firstDay = day.date
-      if (day.date > existing.lastDay) existing.lastDay = day.date
+      if (day.date < existing.firstDay) {
+        existing.firstDay = day.date
+      }
+      if (day.date > existing.lastDay) {
+        existing.lastDay = day.date
+      }
     } else {
       weekMap.set(weekKey, {
         contributions: day.contributionCount,
@@ -125,7 +129,7 @@ export function calculateStreaks(contributionDays: ContributionDay[]): StreakSta
   // Calculate current streak (from current week backwards)
   const today = new Date()
   const currentWeekKey = getWeekKey(today)
-  const { year: currentYear, week: currentWeekNum } = getWeekNumber(today)
+  getWeekNumber(today) // Used for week key calculation
 
   let currentStreak = 0
   let currentStreakStart: string | null = null
@@ -185,7 +189,9 @@ export function calculateStreaks(contributionDays: ContributionDay[]): StreakSta
 }
 
 export function formatDate(dateStr: string | null): string {
-  if (!dateStr) return 'N/A'
+  if (!dateStr) {
+    return 'N/A'
+  }
 
   const date = new Date(dateStr)
   const options: Intl.DateTimeFormatOptions = {
@@ -197,7 +203,9 @@ export function formatDate(dateStr: string | null): string {
 }
 
 export function formatDateRange(start: string | null, end: string | null): string {
-  if (!start || !end) return 'N/A'
+  if (!start || !end) {
+    return 'N/A'
+  }
 
   const startDate = new Date(start)
   const endDate = new Date(end)

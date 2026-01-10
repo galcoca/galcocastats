@@ -54,7 +54,8 @@ export const radicalTheme: Theme = {
 export const glassmorphismTheme: Theme = {
   name: 'glass',
   background: 'rgba(17, 25, 40, 0.75)',
-  backgroundGradient: 'linear-gradient(135deg, rgba(17, 25, 40, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%)',
+  backgroundGradient:
+    'linear-gradient(135deg, rgba(17, 25, 40, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%)',
   border: 'rgba(255, 255, 255, 0.125)',
   title: '#f8fafc',
   text: '#cbd5e1',
@@ -70,7 +71,12 @@ export const glassmorphismTheme: Theme = {
   graphArea: 'rgba(56, 189, 248, 0.15)',
   graphGradient: ['#38bdf8', '#818cf8'],
   gridEmpty: 'rgba(51, 65, 85, 0.5)',
-  gridFilled: ['rgba(56, 189, 248, 0.3)', 'rgba(56, 189, 248, 0.5)', 'rgba(56, 189, 248, 0.7)', '#38bdf8'],
+  gridFilled: [
+    'rgba(56, 189, 248, 0.3)',
+    'rgba(56, 189, 248, 0.5)',
+    'rgba(56, 189, 248, 0.7)',
+    '#38bdf8',
+  ],
   blur: true,
   animation: true,
 }
@@ -121,7 +127,12 @@ export const gradientTheme: Theme = {
   graphArea: 'rgba(255, 255, 255, 0.1)',
   graphGradient: ['#667eea', '#764ba2'],
   gridEmpty: 'rgba(0, 0, 0, 0.2)',
-  gridFilled: ['rgba(251, 191, 36, 0.3)', 'rgba(251, 191, 36, 0.5)', 'rgba(251, 191, 36, 0.7)', '#fbbf24'],
+  gridFilled: [
+    'rgba(251, 191, 36, 0.3)',
+    'rgba(251, 191, 36, 0.5)',
+    'rgba(251, 191, 36, 0.7)',
+    '#fbbf24',
+  ],
   animation: true,
 }
 

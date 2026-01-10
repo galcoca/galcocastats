@@ -1,3 +1,7 @@
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
 import {
   PROFILE_STATS_QUERY,
   LANGUAGES_QUERY,
@@ -6,33 +10,27 @@ import {
   USER_REPOS_QUERY,
   COMMIT_TIMES_QUERY,
 } from './queries'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
 import type {
   GitHubUser,
   ProfileStats,
   LanguageStats,
   ContributionDay,
   ActivityData,
-  CommitNode,
   CodeQualityStats,
   ExperienceStats,
   ProductivityStats,
   ProfessionalSummary,
   StreakStats,
 } from './types'
+
 import { calculateStreaks } from '@/lib/utils/streak'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const GITHUB_GRAPHQL_API = 'https://api.github.com/graphql'
 
-async function fetchGitHub<T>(
-  query: string,
-  variables: Record<string, unknown> = {}
-): Promise<T> {
+async function fetchGitHub<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
   const token = process.env.GITHUB_TOKEN
   if (!token) {
     throw new Error('GITHUB_TOKEN is not set')
@@ -65,10 +63,7 @@ export async function getProfileStats(): Promise<ProfileStats> {
   })
 
   const user = data.user
-  const totalStars = user.repositories.nodes.reduce(
-    (sum, repo) => sum + repo.stargazerCount,
-    0
-  )
+  const totalStars = user.repositories.nodes.reduce((sum, repo) => sum + repo.stargazerCount, 0)
 
   return {
     name: user.name || user.login,
@@ -87,10 +82,9 @@ export async function getProfileStats(): Promise<ProfileStats> {
 export async function getLanguageStats(): Promise<LanguageStats[]> {
   const username = process.env.GITHUB_USERNAME || 'galcoca'
 
-  const data = await fetchGitHub<{ user: { repositoriesContributedTo: GitHubUser['repositories'] } }>(
-    LANGUAGES_QUERY,
-    { login: username }
-  )
+  const data = await fetchGitHub<{
+    user: { repositoriesContributedTo: GitHubUser['repositories'] }
+  }>(LANGUAGES_QUERY, { login: username })
 
   const languageMap = new Map<string, { size: number; color: string }>()
 
@@ -117,20 +111,19 @@ export async function getLanguageStats(): Promise<LanguageStats[]> {
 
   const totalSize = languages.reduce((sum, lang) => sum + lang.size, 0)
 
-  return languages.map((lang) => ({
+  return languages.map(lang => ({
     ...lang,
     percentage: totalSize > 0 ? (lang.size / totalSize) * 100 : 0,
   }))
 }
 
-export async function getContributionCalendar(
-  from: Date,
-  to: Date
-): Promise<ContributionDay[]> {
+export async function getContributionCalendar(from: Date, to: Date): Promise<ContributionDay[]> {
   const username = process.env.GITHUB_USERNAME || 'galcoca'
 
   const data = await fetchGitHub<{
-    user: { contributionsCollection: GitHubUser['contributionsCollection'] }
+    user: {
+      contributionsCollection: GitHubUser['contributionsCollection']
+    }
   }>(CONTRIBUTION_CALENDAR_QUERY, {
     login: username,
     from: from.toISOString(),
@@ -172,15 +165,18 @@ export async function getActivityData(): Promise<ActivityData[]> {
   const days = await getContributionCalendar(from, to)
 
   return days
-    .filter((day) => day.date >= fromColombia && day.date <= todayColombia)
-    .map((day) => ({
+    .filter(day => day.date >= fromColombia && day.date <= todayColombia)
+    .map(day => ({
       date: day.date,
       count: day.contributionCount,
     }))
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 
-export async function getActiveDaysThisYear(): Promise<{ activeDays: number; totalDays: number }> {
+export async function getActiveDaysThisYear(): Promise<{
+  activeDays: number
+  totalDays: number
+}> {
   const now = new Date()
   const startOfYear = new Date(now.getFullYear(), 0, 1)
 
@@ -198,7 +194,11 @@ export async function getCommitTimes(): Promise<{ hour: number; day: number }[]>
 
   // First get user's repos
   const reposData = await fetchGitHub<{
-    user: { repositories: { nodes: Array<{ name: string; owner: { login: string } }> } }
+    user: {
+      repositories: {
+        nodes: Array<{ name: string; owner: { login: string } }>
+      }
+    }
   }>(USER_REPOS_QUERY, { login: username })
 
   const commits: { hour: number; day: number }[] = []
@@ -213,7 +213,9 @@ export async function getCommitTimes(): Promise<{ hour: number; day: number }[]>
               history: {
                 nodes: Array<{
                   committedDate: string
-                  author: { user: { login: string } | null } | null
+                  author: {
+                    user: { login: string } | null
+                  } | null
                 }>
               }
             }
@@ -262,7 +264,8 @@ export async function getCodeQualityStats(streakDays: number): Promise<CodeQuali
         totalPullRequestContributions: number
       }
     }
-  }>(`
+  }>(
+    `
     query($login: String!, $from: DateTime!, $to: DateTime!) {
       user(login: $login) {
         mergedPRs: pullRequests(states: [MERGED]) { totalCount }
@@ -274,7 +277,9 @@ export async function getCodeQualityStats(streakDays: number): Promise<CodeQuali
         }
       }
     }
-  `, { login: username, from: from.toISOString(), to: to.toISOString() })
+  `,
+    { login: username, from: from.toISOString(), to: to.toISOString() }
+  )
 
   const merged = data.user.mergedPRs.totalCount
   const closed = data.user.closedPRs.totalCount
@@ -304,7 +309,8 @@ export async function getExperienceStats(): Promise<ExperienceStats> {
       openIssues: { totalCount: number }
       closedIssues: { totalCount: number }
     }
-  }>(`
+  }>(
+    `
     query($login: String!) {
       user(login: $login) {
         repositoriesContributedTo(contributionTypes: [COMMIT, PULL_REQUEST]) {
@@ -319,12 +325,15 @@ export async function getExperienceStats(): Promise<ExperienceStats> {
         closedIssues: issues(states: [CLOSED]) { totalCount }
       }
     }
-  `, { login: username })
+  `,
+    { login: username }
+  )
 
   return {
     activeProjects: data.user.repositoriesContributedTo.totalCount,
     totalPRs: data.user.pullRequests.totalCount,
-    totalCommits: data.user.contributionsCollection.totalCommitContributions +
+    totalCommits:
+      data.user.contributionsCollection.totalCommitContributions +
       data.user.contributionsCollection.restrictedContributionsCount,
     totalIssues: data.user.openIssues.totalCount + data.user.closedIssues.totalCount,
     closedIssues: data.user.closedIssues.totalCount,
@@ -345,7 +354,8 @@ export async function getProductivityStats(
       }
       pullRequests: { totalCount: number }
     }
-  }>(`
+  }>(
+    `
     query($login: String!) {
       user(login: $login) {
         contributionsCollection {
@@ -355,9 +365,12 @@ export async function getProductivityStats(
         pullRequests { totalCount }
       }
     }
-  `, { login: username })
+  `,
+    { login: username }
+  )
 
-  const totalCommits = data.user.contributionsCollection.totalCommitContributions +
+  const totalCommits =
+    data.user.contributionsCollection.totalCommitContributions +
     data.user.contributionsCollection.restrictedContributionsCount
   const totalPRs = data.user.pullRequests.totalCount
 
@@ -366,8 +379,8 @@ export async function getProductivityStats(
   const monthsActive = weeksActive / 4.33
 
   return {
-    avgCommitsPerWeek: Math.round(totalCommits / weeksActive * 10) / 10,
-    avgPRsPerMonth: Math.round(totalPRs / monthsActive * 10) / 10,
+    avgCommitsPerWeek: Math.round((totalCommits / weeksActive) * 10) / 10,
+    avgPRsPerMonth: Math.round((totalPRs / monthsActive) * 10) / 10,
     activeDaysPercent: Math.round((activeDays.activeDays / activeDays.totalDays) * 100),
     totalWeeksActive,
   }
@@ -392,7 +405,8 @@ export async function getDevOpsIndicators(): Promise<{
         totalRepositoriesWithContributedCommits: number
       }
     }
-  }>(`
+  }>(
+    `
     query($login: String!) {
       user(login: $login) {
         repositoriesContributedTo(first: 50, contributionTypes: [COMMIT, PULL_REQUEST]) {
@@ -407,7 +421,9 @@ export async function getDevOpsIndicators(): Promise<{
         }
       }
     }
-  `, { login: username })
+  `,
+    { login: username }
+  )
 
   // Count unique organizations
   const orgs = new Set(data.user.repositoriesContributedTo.nodes.map(r => r.owner.login))
@@ -438,7 +454,8 @@ export async function getProfessionalSummary(
         totalPullRequestReviewContributions: number
       }
     }
-  }>(`
+  }>(
+    `
     query($login: String!) {
       user(login: $login) {
         contributionsCollection {
@@ -450,11 +467,17 @@ export async function getProfessionalSummary(
         }
       }
     }
-  `, { login: username })
+  `,
+    { login: username }
+  )
 
   const cc = data.user.contributionsCollection
-  const totalContributions = cc.totalCommitContributions + cc.restrictedContributionsCount +
-    cc.totalPullRequestContributions + cc.totalIssueContributions + cc.totalPullRequestReviewContributions
+  const totalContributions =
+    cc.totalCommitContributions +
+    cc.restrictedContributionsCount +
+    cc.totalPullRequestContributions +
+    cc.totalIssueContributions +
+    cc.totalPullRequestReviewContributions
 
   return {
     streakWeeks,
@@ -508,7 +531,8 @@ export async function getLast31DaysStats(): Promise<{
         totalRepositoriesWithContributedCommits: number
       }
     }
-  }>(`
+  }>(
+    `
     query($login: String!, $from: DateTime!, $to: DateTime!) {
       user(login: $login) {
         contributionsCollection(from: $from, to: $to) {
@@ -521,7 +545,9 @@ export async function getLast31DaysStats(): Promise<{
         }
       }
     }
-  `, { login: username, from: from.toISOString(), to: to.toISOString() })
+  `,
+    { login: username, from: from.toISOString(), to: to.toISOString() }
+  )
 
   const cc = data.user.contributionsCollection
   const commits = cc.totalCommitContributions + cc.restrictedContributionsCount
@@ -531,8 +557,8 @@ export async function getLast31DaysStats(): Promise<{
   const activeDays = days.filter(d => d.contributionCount > 0).length
 
   // Calculate current streak from the last 31 days
-  const sortedDays = [...days].sort((a, b) =>
-    new Date(b.date).getTime() - new Date(a.date).getTime()
+  const sortedDays = [...days].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   )
   let currentStreak = 0
   for (const day of sortedDays) {

@@ -1,0 +1,51 @@
+# Dependabot configuration for Galcoca Github Stats
+# Single weekly PR with all dependency updates for entire monorepo
+# Using native Bun support (GA since Feb 2025)
+# Requires: Bun@latest with bun.lock (text format, not binary bun.lockb)
+# Node version: v24.12.0
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # All Bun packages (monorepo root handles all workspaces) - ONE PR FOR EVERYTHING
+  - package-ecosystem: 'bun'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'America/Chicago'
+    open-pull-requests-limit: 1
+    # Group ALL updates together into single PR
+    groups:
+      weekly-updates:
+        patterns:
+          - '*'
+        update-types:
+          - 'major'
+          - 'minor'
+          - 'patch'
+    labels:
+      - 'dependencies'
+      - 'monorepo'
+    assignees:
+      - 'galcoca'
+
+  # GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'America/Chicago'
+    open-pull-requests-limit: 1
+    groups:
+      actions:
+        patterns:
+          - '*'
+    labels:
+      - 'dependencies'
+      - 'ci'
+    assignees:
+      - 'galcoca'

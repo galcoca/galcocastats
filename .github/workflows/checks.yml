@@ -1,0 +1,184 @@
+name: Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  branch-check:
+    runs-on: ubuntu-latest
+    name: Check Branch Status
+    if: |
+      !(github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check if branch is ready for merge
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          echo "🔍 Checking if branch is ready for merge..."
+
+          # Fetch both branches
+          git fetch origin "$BASE_REF"
+          git fetch origin "$HEAD_REF"
+
+          # Use the actual PR head commit, not the current checkout
+          PR_HEAD="origin/$HEAD_REF"
+          BASE_HEAD="origin/$BASE_REF"
+
+          echo "PR branch: $PR_HEAD ($(git rev-parse --short "$PR_HEAD"))"
+          echo "Base branch: $BASE_HEAD ($(git rev-parse --short "$BASE_HEAD"))"
+
+          # Check if PR branch is behind base
+          BEHIND_COUNT=$(git rev-list --count "$PR_HEAD".."$BASE_HEAD")
+
+          echo "Commits behind $BASE_REF: $BEHIND_COUNT"
+
+          if [ "$BEHIND_COUNT" -gt 0 ]; then
+            echo "❌ PR branch is $BEHIND_COUNT commits behind $BASE_REF"
+            echo "Missing commits:"
+            git log --oneline "$PR_HEAD".."$BASE_HEAD"
+            echo "Please update your branch before running checks"
+            exit 1
+          fi
+
+          echo "✅ Branch is ready for merge into $BASE_REF"
+
+  setup:
+    runs-on: ubuntu-latest
+    name: Setup Dependencies
+    needs: branch-check
+    if: always() && (needs.branch-check.result == 'success' || needs.branch-check.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Cache node_modules
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ github.head_ref || github.ref_name }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        run: bun install
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    needs: setup
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Restore dependencies
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ github.head_ref || github.ref_name }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies (if cache miss)
+        run: bun install
+
+      - name: Cache Next.js build
+        uses: actions/cache@v5
+        with:
+          path: .next
+          key: ${{ runner.os }}-nextjs-${{ github.head_ref || github.ref_name }}-${{ hashFiles('src/**/*', 'package.json', 'bun.lock') }}
+
+      - name: Build
+        run: bun run build
+
+  typecheck:
+    runs-on: ubuntu-latest
+    name: TypeScript Type Checking
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Restore dependencies
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ github.head_ref || github.ref_name }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies (if cache miss)
+        run: bun install
+
+      - name: TypeScript Type Check
+        run: bun run typecheck
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Linting
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Restore dependencies
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ github.head_ref || github.ref_name }}-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies (if cache miss)
+        run: bun install
+
+      - name: Lint
+        run: bun run lint
+
+  summary:
+    runs-on: ubuntu-latest
+    name: Checks Summary
+    needs: [branch-check, build, typecheck, lint]
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.build.result }}" == "success" && "${{ needs.typecheck.result }}" == "success" && "${{ needs.lint.result }}" == "success" ]]; then
+            echo "✅ All checks passed!"
+            echo "- Build: ✅"
+            echo "- TypeScript type checking: ✅"
+            echo "- Code linting: ✅"
+          else
+            echo "❌ Some checks failed:"
+            echo "- Build: ${{ needs.build.result == 'success' && '✅' || '❌' }}"
+            echo "- TypeScript type checking: ${{ needs.typecheck.result == 'success' && '✅' || '❌' }}"
+            echo "- Code linting: ${{ needs.lint.result == 'success' && '✅' || '❌' }}"
+            exit 1
+          fi

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# Ensure bun is available in PATH (needed for GUI git clients)
+export PATH="$HOME/.bun/bin:$PATH"
+
+echo "→ Checking staged files..."
+
+if ! bun run pre-commit; then
+  echo "✗ Pre-commit checks failed"
+  exit 1
+fi
+
+echo "✓ All checks passed"

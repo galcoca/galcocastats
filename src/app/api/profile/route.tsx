@@ -25,10 +25,11 @@ export async function GET(request: Request) {
       avgPRsPerWeek: last31Days.avgPRsPerWeek,
     }
 
-    const svg = await renderToSvg(
-      <DeveloperProfileCard stats={stats} theme={theme} />,
-      { width: 900, height: 260, theme }
-    )
+    const svg = await renderToSvg(<DeveloperProfileCard stats={stats} theme={theme} />, {
+      width: 900,
+      height: 260,
+      theme,
+    })
 
     return new Response(svg, { headers: getCacheHeaders() })
   } catch (error) {

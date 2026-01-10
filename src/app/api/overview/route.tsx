@@ -25,10 +25,11 @@ export async function GET(request: Request) {
       currentStreakStart: streak.currentStreakStart,
     }
 
-    const svg = await renderToSvg(
-      <OverviewCard stats={stats} theme={theme} />,
-      { width: 900, height: 260, theme }
-    )
+    const svg = await renderToSvg(<OverviewCard stats={stats} theme={theme} />, {
+      width: 900,
+      height: 260,
+      theme,
+    })
 
     return new Response(svg, { headers: getCacheHeaders() })
   } catch (error) {

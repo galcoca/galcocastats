@@ -10,10 +10,7 @@ export async function GET(request: Request) {
     const themeName = searchParams.get('theme') || 'radical'
     const theme = getTheme(themeName)
 
-    const [languages, devops] = await Promise.all([
-      getLanguageStats(),
-      getDevOpsIndicators(),
-    ])
+    const [languages, devops] = await Promise.all([getLanguageStats(), getDevOpsIndicators()])
 
     const svg = await renderToSvg(
       <TechSkillsCard languages={languages} devops={devops} theme={theme} />,
