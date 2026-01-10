@@ -20,11 +20,38 @@ jobs:
     name: Wait for Vercel
     if: github.event_name == 'pull_request'
     steps:
-      - name: Wait for deployment
-        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 300
+      - name: Wait and verify deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Waiting for Vercel deployment..."
+          for i in {1..30}; do
+            echo -n "."
+
+            # Check deployment status
+            STATUS=$(gh api repos/${{ github.repository }}/deployments \
+              --jq "[.[] | select(.sha == \"${{ github.event.pull_request.head.sha }}\")] | first | .id" 2>/dev/null || echo "")
+
+            if [ -n "$STATUS" ]; then
+              STATE=$(gh api repos/${{ github.repository }}/deployments/$STATUS/statuses \
+                --jq "first | .state" 2>/dev/null || echo "pending")
+
+              if [ "$STATE" = "success" ]; then
+                echo ""
+                echo "✓ Vercel deployment successful"
+                exit 0
+              elif [ "$STATE" = "failure" ] || [ "$STATE" = "error" ]; then
+                echo ""
+                echo "✗ Vercel deployment failed"
+                exit 1
+              fi
+            fi
+
+            sleep 10
+          done
+          echo ""
+          echo "✗ Timeout waiting for deployment"
+          exit 1
 
   branch-check:
     runs-on: ubuntu-latest
