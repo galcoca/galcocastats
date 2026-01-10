@@ -15,11 +15,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  wait-for-vercel:
+    runs-on: ubuntu-latest
+    name: Wait for Vercel
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Wait for deployment
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 300
+
   branch-check:
     runs-on: ubuntu-latest
     name: Check Branch Status
+    needs: wait-for-vercel
     if: |
-      !(github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master')
+      always() &&
+      (needs.wait-for-vercel.result == 'success' || github.event_name == 'workflow_dispatch')
     steps:
       - uses: actions/checkout@v6
         with:
@@ -165,7 +178,7 @@ jobs:
   summary:
     runs-on: ubuntu-latest
     name: Checks Summary
-    needs: [branch-check, build, typecheck, lint]
+    needs: [wait-for-vercel, branch-check, build, typecheck, lint]
     if: always()
     steps:
       - name: Check results
