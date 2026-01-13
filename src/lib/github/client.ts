@@ -152,25 +152,76 @@ export async function getContributionYears(): Promise<number[]> {
   return data.user.contributionsCollection.contributionYears
 }
 
-export async function getActivityData(): Promise<ActivityData[]> {
+export async function getActivityData(): Promise<{
+  activity: ActivityData[]
+  currentMonthDays: number
+  previousMonthSameDays: number
+  comparedToDate: string
+  last12Months: { month: number; year: number; total: number }[]
+}> {
   // Use Colombia timezone (GMT-5) for date boundaries
   const nowColombia = dayjs().tz('America/Bogota')
   const todayColombia = nowColombia.format('YYYY-MM-DD')
   const fromColombia = nowColombia.subtract(30, 'day').format('YYYY-MM-DD')
 
-  // Fetch a wider range to ensure we get all needed days
-  const from = nowColombia.subtract(32, 'day').toDate()
+  // Current month boundaries (1st to today)
+  const currentMonthStart = nowColombia.startOf('month').format('YYYY-MM-DD')
+
+  // Previous month same days (1st to same day of previous month)
+  const previousMonthStart = nowColombia.subtract(1, 'month').startOf('month').format('YYYY-MM-DD')
+  const previousMonthSameDay = nowColombia.subtract(1, 'month').format('YYYY-MM-DD')
+
+  // 11 months ago for best month calculation (to stay within GitHub's 1 year limit)
+  const twelveMonthsAgo = nowColombia.subtract(11, 'month').startOf('month').format('YYYY-MM-DD')
+
+  // Fetch ~12 months (staying within GitHub's 1 year limit)
+  const from = nowColombia.subtract(11, 'month').startOf('month').toDate()
   const to = nowColombia.add(1, 'day').toDate()
 
   const days = await getContributionCalendar(from, to)
 
-  return days
+  // Current period (last 31 days for the graph)
+  const activity = days
     .filter(day => day.date >= fromColombia && day.date <= todayColombia)
     .map(day => ({
       date: day.date,
       count: day.contributionCount,
     }))
     .sort((a, b) => a.date.localeCompare(b.date))
+
+  // Current month contributions (1st to today)
+  const currentMonthDays = days
+    .filter(day => day.date >= currentMonthStart && day.date <= todayColombia)
+    .reduce((sum, day) => sum + day.contributionCount, 0)
+
+  // Previous month same days (1st to same day number)
+  const previousMonthSameDays = days
+    .filter(day => day.date >= previousMonthStart && day.date <= previousMonthSameDay)
+    .reduce((sum, day) => sum + day.contributionCount, 0)
+
+  // Calculate monthly totals for last 12 months
+  const monthlyTotals: Record<string, { month: number; year: number; total: number }> = {}
+  for (const day of days.filter(d => d.date >= twelveMonthsAgo && d.date <= todayColombia)) {
+    const [year, month] = day.date.split('-').map(Number)
+    const key = `${year}-${month}`
+    if (!monthlyTotals[key]) {
+      monthlyTotals[key] = { month, year, total: 0 }
+    }
+    monthlyTotals[key].total += day.contributionCount
+  }
+
+  const last12Months = Object.values(monthlyTotals).sort((a, b) => {
+    if (a.year !== b.year) {
+      return a.year - b.year
+    }
+    return a.month - b.month
+  })
+
+  // Format compared to date (e.g., "December 13")
+  const prevMonth = nowColombia.subtract(1, 'month')
+  const comparedToDate = `${prevMonth.format('MMMM')} ${prevMonth.date()}`
+
+  return { activity, currentMonthDays, previousMonthSameDays, comparedToDate, last12Months }
 }
 
 export async function getActiveDaysThisYear(): Promise<{

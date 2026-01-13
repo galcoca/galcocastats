@@ -10,13 +10,24 @@ export async function GET(request: Request) {
     const themeName = searchParams.get('theme') || 'radical'
     const theme = getTheme(themeName)
 
-    const activity = await getActivityData()
+    const { activity, currentMonthDays, previousMonthSameDays, comparedToDate, last12Months } =
+      await getActivityData()
 
-    const svg = await renderToSvg(<ActivityCard activity={activity} theme={theme} />, {
-      width: 900,
-      height: 320,
-      theme,
-    })
+    const svg = await renderToSvg(
+      <ActivityCard
+        activity={activity}
+        currentMonthDays={currentMonthDays}
+        previousMonthSameDays={previousMonthSameDays}
+        comparedToDate={comparedToDate}
+        last12Months={last12Months}
+        theme={theme}
+      />,
+      {
+        width: 900,
+        height: 320,
+        theme,
+      }
+    )
 
     return new Response(svg, { headers: getCacheHeaders() })
   } catch (error) {

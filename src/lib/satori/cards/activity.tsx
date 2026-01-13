@@ -12,7 +12,34 @@ const GRAPH_HEIGHT = 160
 const PADDING = { left: 32, right: 10, top: 10, bottom: 32 }
 const CHART_WIDTH = GRAPH_WIDTH - PADDING.left - PADDING.right
 const CHART_HEIGHT = GRAPH_HEIGHT - PADDING.top - PADDING.bottom
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTHS_SHORT = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
+const MONTHS_FULL = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
 
 // =============================================================================
 // Icons
@@ -43,10 +70,15 @@ function parseDate(dateStr: string) {
 
 function formatDate(dateStr: string): string {
   const { month, day } = parseDate(dateStr)
-  return `${MONTHS[month - 1]} ${day}`
+  return `${MONTHS_SHORT[month - 1]} ${day}`
 }
 
-function calculateStats(activity: ActivityData[]) {
+function calculateStats(
+  activity: ActivityData[],
+  currentMonthDays: number,
+  previousMonthSameDays: number,
+  last12Months: { month: number; year: number; total: number }[]
+) {
   const maxCount = Math.max(...activity.map(d => d.count), 1)
   const totalContributions = activity.reduce((sum, d) => sum + d.count, 0)
   const avgPerDay = totalContributions / activity.length
@@ -55,20 +87,29 @@ function calculateStats(activity: ActivityData[]) {
   const bestDay = activity.reduce((best, day) => (day.count > best.count ? day : best), activity[0])
   const bestDayIndex = activity.findIndex(d => d.date === bestDay.date)
 
-  // Weekly stats
-  const weeks: number[] = []
-  for (let i = 0; i < activity.length; i += 7) {
-    const weekData = activity.slice(i, i + 7)
-    weeks.push(weekData.reduce((sum, d) => sum + d.count, 0))
+  // Get current and previous month from last12Months
+  const currentMonthData = last12Months[last12Months.length - 1] || {
+    total: 0,
+    month: 1,
+    year: 2024,
+  }
+  const previousMonthData = last12Months[last12Months.length - 2] || {
+    total: 0,
+    month: 1,
+    year: 2024,
   }
 
-  const currentWeek = weeks[weeks.length - 1] || 0
-  const previousWeek = weeks[weeks.length - 2] || 0
-  const bestWeek = Math.max(...weeks)
-  const bestWeekIndex = weeks.indexOf(bestWeek)
+  // Best month from last 12 months
+  const bestMonthData = last12Months.reduce(
+    (best, m) => (m.total > best.total ? m : best),
+    last12Months[0] || { total: 0, month: 1, year: 2024 }
+  )
 
-  // Trend: compare last 7 days vs previous 7 days
-  const trendPercent = previousWeek > 0 ? ((currentWeek - previousWeek) / previousWeek) * 100 : 0
+  // Trend: compare current month days vs same days of previous month (equitative comparison)
+  const trendPercent =
+    previousMonthSameDays > 0
+      ? ((currentMonthDays - previousMonthSameDays) / previousMonthSameDays) * 100
+      : 0
 
   return {
     maxCount,
@@ -78,11 +119,12 @@ function calculateStats(activity: ActivityData[]) {
     bestDay,
     bestDayIndex,
     trendPercent,
-    currentWeek,
-    previousWeek,
-    bestWeek,
-    bestWeekIndex,
-    weeks,
+    currentMonth: currentMonthData.total,
+    previousMonth: previousMonthData.total,
+    bestMonth: bestMonthData.total,
+    currentMonthName: `${MONTHS_FULL[currentMonthData.month - 1]} ${currentMonthData.year}`,
+    previousMonthName: `${MONTHS_FULL[previousMonthData.month - 1]} ${previousMonthData.year}`,
+    bestMonthName: `${MONTHS_FULL[bestMonthData.month - 1]} ${bestMonthData.year}`,
   }
 }
 
@@ -114,10 +156,12 @@ function generateYLabels(maxCount: number) {
 function Header({
   days,
   trendPercent,
+  comparedToDate,
   theme,
 }: {
   days: number
   trendPercent: number
+  comparedToDate: string
   theme: Theme
 }) {
   const isUp = trendPercent >= 0
@@ -144,6 +188,16 @@ function Header({
           {isUp ? '+' : ''}
           {trendPercent.toFixed(0)}%
         </div>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          fontSize: 11,
+          color: theme.dates,
+          marginLeft: 8,
+        }}
+      >
+        compared to {comparedToDate}
       </div>
     </div>
   )
@@ -178,7 +232,7 @@ function Graph({
   activity.forEach((d, i) => {
     const { month } = parseDate(d.date)
     if (month !== lastMonth) {
-      monthChanges.push({ index: i, month: MONTHS[month - 1] })
+      monthChanges.push({ index: i, month: MONTHS_SHORT[month - 1] })
       lastMonth = month
     }
   })
@@ -339,19 +393,25 @@ function Graph({
   )
 }
 
-function WeekComparison({
-  currentWeek,
-  previousWeek,
-  bestWeek,
+function MonthComparison({
+  currentMonth,
+  previousMonth,
+  bestMonth,
+  currentMonthName,
+  previousMonthName,
+  bestMonthName,
   theme,
 }: {
-  currentWeek: number
-  previousWeek: number
-  bestWeek: number
+  currentMonth: number
+  previousMonth: number
+  bestMonth: number
+  currentMonthName: string
+  previousMonthName: string
+  bestMonthName: string
   theme: Theme
 }) {
-  const maxWeek = Math.max(currentWeek, previousWeek, bestWeek, 1)
-  const isUp = currentWeek >= previousWeek
+  const maxMonth = Math.max(currentMonth, previousMonth, bestMonth, 1)
+  const isUp = currentMonth >= previousMonth
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', marginTop: 14 }}>
@@ -364,51 +424,17 @@ function WeekComparison({
           fontWeight: 500,
         }}
       >
-        Weekly Comparison
+        Monthly Comparison
       </div>
       <div style={{ display: 'flex', gap: 16 }}>
-        {/* This Week */}
+        {/* Previous Month */}
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>This week</div>
-            <div
-              style={{
-                display: 'flex',
-                fontSize: 12,
-                fontWeight: 600,
-                color: isUp ? '#22c55e' : theme.title,
-              }}
-            >
-              {currentWeek}
+            <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>
+              {previousMonthName}
             </div>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              height: 8,
-              background: theme.gridEmpty,
-              borderRadius: 4,
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                width: `${(currentWeek / maxWeek) * 100}%`,
-                height: '100%',
-                background: isUp ? '#22c55e' : theme.graphLine,
-                borderRadius: 4,
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Last Week */}
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>Last week</div>
             <div style={{ display: 'flex', fontSize: 12, fontWeight: 600, color: theme.title }}>
-              {previousWeek}
+              {previousMonth}
             </div>
           </div>
           <div
@@ -423,7 +449,7 @@ function WeekComparison({
             <div
               style={{
                 display: 'flex',
-                width: `${(previousWeek / maxWeek) * 100}%`,
+                width: `${(previousMonth / maxMonth) * 100}%`,
                 height: '100%',
                 background: theme.graphLine,
                 borderRadius: 4,
@@ -432,12 +458,21 @@ function WeekComparison({
           </div>
         </div>
 
-        {/* Best Week */}
+        {/* Current Month */}
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>Best week</div>
-            <div style={{ display: 'flex', fontSize: 12, fontWeight: 600, color: theme.accent }}>
-              {bestWeek}
+            <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>
+              {currentMonthName}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                fontSize: 12,
+                fontWeight: 600,
+                color: isUp ? '#22c55e' : theme.title,
+              }}
+            >
+              {currentMonth}
             </div>
           </div>
           <div
@@ -452,7 +487,36 @@ function WeekComparison({
             <div
               style={{
                 display: 'flex',
-                width: `${(bestWeek / maxWeek) * 100}%`,
+                width: `${(currentMonth / maxMonth) * 100}%`,
+                height: '100%',
+                background: isUp ? '#22c55e' : theme.graphLine,
+                borderRadius: 4,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Best Month */}
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div style={{ display: 'flex', fontSize: 11, color: theme.dates }}>{bestMonthName}</div>
+            <div style={{ display: 'flex', fontSize: 12, fontWeight: 600, color: theme.accent }}>
+              {bestMonth}
+            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              height: 8,
+              background: theme.gridEmpty,
+              borderRadius: 4,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: `${(bestMonth / maxMonth) * 100}%`,
                 height: '100%',
                 background: theme.accent,
                 borderRadius: 4,
@@ -547,7 +611,21 @@ function StatsPanel({
 // Main Component
 // =============================================================================
 
-export function ActivityCard({ activity, theme }: { activity: ActivityData[]; theme: Theme }) {
+export function ActivityCard({
+  activity,
+  currentMonthDays,
+  previousMonthSameDays,
+  comparedToDate,
+  last12Months,
+  theme,
+}: {
+  activity: ActivityData[]
+  currentMonthDays: number
+  previousMonthSameDays: number
+  comparedToDate: string
+  last12Months: { month: number; year: number; total: number }[]
+  theme: Theme
+}) {
   if (activity.length === 0) {
     return (
       <Card theme={theme} width={900} height={320}>
@@ -556,7 +634,7 @@ export function ActivityCard({ activity, theme }: { activity: ActivityData[]; th
     )
   }
 
-  const stats = calculateStats(activity)
+  const stats = calculateStats(activity, currentMonthDays, previousMonthSameDays, last12Months)
   const points = generateGraphPoints(activity, stats.maxCount)
   const yLabels = generateYLabels(stats.maxCount)
 
@@ -565,7 +643,12 @@ export function ActivityCard({ activity, theme }: { activity: ActivityData[]; th
       <div style={{ display: 'flex', gap: 20 }}>
         {/* Left: Graph Section */}
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-          <Header days={activity.length} trendPercent={stats.trendPercent} theme={theme} />
+          <Header
+            days={activity.length}
+            trendPercent={stats.trendPercent}
+            comparedToDate={comparedToDate}
+            theme={theme}
+          />
           <Graph
             activity={activity}
             points={points}
@@ -575,10 +658,13 @@ export function ActivityCard({ activity, theme }: { activity: ActivityData[]; th
             maxCount={stats.maxCount}
             theme={theme}
           />
-          <WeekComparison
-            currentWeek={stats.currentWeek}
-            previousWeek={stats.previousWeek}
-            bestWeek={stats.bestWeek}
+          <MonthComparison
+            currentMonth={stats.currentMonth}
+            previousMonth={stats.previousMonth}
+            bestMonth={stats.bestMonth}
+            currentMonthName={stats.currentMonthName}
+            previousMonthName={stats.previousMonthName}
+            bestMonthName={stats.bestMonthName}
             theme={theme}
           />
         </div>
