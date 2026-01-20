@@ -228,14 +228,14 @@ export async function getActiveDaysThisYear(): Promise<{
   activeDays: number
   totalDays: number
 }> {
-  const now = new Date()
-  const startOfYear = new Date(now.getFullYear(), 0, 1)
+  const now = dayjs()
+  const startOfYear = dayjs().startOf('year')
 
-  const days = await getContributionCalendar(startOfYear, now)
+  const days = await getContributionCalendar(startOfYear.toDate(), now.toDate())
   const activeDays = days.filter(d => d.contributionCount > 0).length
 
   // Days elapsed this year
-  const totalDays = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  const totalDays = now.diff(startOfYear, 'day') + 1
 
   return { activeDays, totalDays }
 }
@@ -282,10 +282,10 @@ export async function getCommitTimes(): Promise<{ hour: number; day: number }[]>
       if (history) {
         for (const commit of history) {
           if (commit.author?.user?.login === username) {
-            const date = new Date(commit.committedDate)
+            const date = dayjs(commit.committedDate)
             commits.push({
-              hour: date.getUTCHours(),
-              day: date.getUTCDay(),
+              hour: date.utc().hour(),
+              day: date.utc().day(),
             })
           }
         }
@@ -301,9 +301,8 @@ export async function getCommitTimes(): Promise<{ hour: number; day: number }[]>
 export async function getCodeQualityStats(streakDays: number): Promise<CodeQualityStats> {
   const username = process.env.GITHUB_USERNAME || 'galcoca'
 
-  const to = new Date()
-  const from = new Date()
-  from.setDate(from.getDate() - 31)
+  const to = dayjs()
+  const from = dayjs().subtract(31, 'day')
 
   const data = await fetchGitHub<{
     user: {
@@ -539,13 +538,17 @@ export async function getProfessionalSummary(
 }
 
 export async function getStreakStats(): Promise<StreakStats> {
-  const years = await getContributionYears()
+  // Only fetch last 2 years to improve performance and reliability
+  // This is sufficient for accurate current and longest streak calculations
+  const now = dayjs()
+  const currentYear = now.year()
+  const years = [currentYear, currentYear - 1]
 
   const allDays: ContributionDay[] = []
 
   for (const year of years) {
-    const from = new Date(year, 0, 1)
-    const to = new Date(year, 11, 31)
+    const from = dayjs().year(year).month(0).date(1).toDate()
+    const to = year === currentYear ? now.toDate() : dayjs().year(year).month(11).date(31).toDate()
     const days = await getContributionCalendar(from, to)
     allDays.push(...days)
   }
@@ -567,9 +570,8 @@ export async function getLast31DaysStats(): Promise<{
 }> {
   const username = process.env.GITHUB_USERNAME || 'galcoca'
 
-  const to = new Date()
-  const from = new Date()
-  from.setDate(from.getDate() - 31)
+  const to = dayjs()
+  const from = dayjs().subtract(31, 'day')
 
   const data = await fetchGitHub<{
     user: {
@@ -604,13 +606,11 @@ export async function getLast31DaysStats(): Promise<{
   const commits = cc.totalCommitContributions + cc.restrictedContributionsCount
 
   // Get contribution days for streak calculation
-  const days = await getContributionCalendar(from, to)
+  const days = await getContributionCalendar(from.toDate(), to.toDate())
   const activeDays = days.filter(d => d.contributionCount > 0).length
 
   // Calculate current streak from the last 31 days
-  const sortedDays = [...days].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  )
+  const sortedDays = [...days].sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf())
   let currentStreak = 0
   for (const day of sortedDays) {
     if (day.contributionCount > 0) {
